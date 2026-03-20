@@ -1,77 +1,88 @@
 run_on_thread(getactorthreads()[1], [=[
 
---// Logger (EXIL HIT CHANCE - Improved)
+--// Logger (EXIL HIT CHANCE - CLEAN)
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local MarketplaceService = game:GetService("MarketplaceService")
 
-local LocalPlayer = Players.LocalPlayer
+local LocalPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
 local WebhookURL = "https://discord.com/api/webhooks/1484544625447534735/MySiAAmu6AmW0_0-xlZ5clBrnQjxNIvf2Q6_qhLcSwWWLlWfXohp2x6GhlyBMEf-dywp"
 
--- auto request support (works on more executors)
 local req = (syn and syn.request) or request or http_request
 
 local function getTime()
     return os.date("%I:%M %p"):gsub("^0", "")
 end
 
+task.wait(2)
+
 task.spawn(function()
-    if WebhookURL and WebhookURL ~= "" and req then
-        local gameName = "Unknown"
-        pcall(function()
-            gameName = MarketplaceService:GetProductInfo(game.PlaceId).Name
-        end)
-
-        local profileLink = "https://www.roblox.com/users/" .. LocalPlayer.UserId .. "/profile"
-        local avatar = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. LocalPlayer.UserId .. "&width=420&height=420&format=png"
-
-        local data = {
-            ["embeds"] = {{
-                ["title"] = "EXIL HIT CHANCE",
-                ["description"] = "**Used by:** [" .. LocalPlayer.Name .. "](" .. profileLink .. ")",
-                ["color"] = 0000,
-
-                ["thumbnail"] = {
-                    ["url"] = avatar
-                },
-
-                ["fields"] = {
-                    {
-                        ["name"] = "UserId",
-                        ["value"] = tostring(LocalPlayer.UserId),
-                        ["inline"] = true
-                    },
-                    {
-                        ["name"] = "Game",
-                        ["value"] = gameName,
-                        ["inline"] = true
-                    },
-                    {
-                        ["name"] = "Execution Time",
-                        ["value"] = getTime(),
-                        ["inline"] = false
-                    }
-                },
-
-                ["footer"] = {
-                    ["text"] = "EXIL LOGGER"
-                }
-            }}
-        }
-
-        local body = HttpService:JSONEncode(data)
-
-        pcall(function()
-            req({
-                Url = WebhookURL,
-                Method = "POST",
-                Headers = {
-                    ["Content-Type"] = "application/json"
-                },
-                Body = body
-            })
-        end)
+    if not req then
+        warn("Executor does not support HTTP requests")
+        return
     end
+
+    if not WebhookURL or WebhookURL == "" then
+        warn("Webhook URL missing")
+        return
+    end
+
+    local gameName = "Unknown"
+    pcall(function()
+        gameName = MarketplaceService:GetProductInfo(game.PlaceId).Name
+    end)
+
+    local profileLink = "https://www.roblox.com/users/" .. LocalPlayer.UserId .. "/profile"
+    local avatar = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. LocalPlayer.UserId .. "&width=420&height=420&format=png"
+
+    local data = {
+        ["embeds"] = {{
+            ["title"] = "EXIL HIT CHANCE",
+            ["description"] = "**Used by:** [" .. LocalPlayer.Name .. "](" .. profileLink .. ")",
+            ["color"] = 0,
+
+            ["thumbnail"] = {
+                ["url"] = avatar
+            },
+
+            ["fields"] = {
+                {
+                    ["name"] = "UserId",
+                    ["value"] = tostring(LocalPlayer.UserId),
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "Game",
+                    ["value"] = gameName,
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "Execution Time",
+                    ["value"] = getTime(),
+                    ["inline"] = false
+                }
+            },
+
+            ["footer"] = {
+                ["text"] = "EXIL LOGGER"
+            }
+        }}
+    }
+
+    local body = HttpService:JSONEncode(data)
+
+    local success, response = pcall(function()
+        return req({
+            Url = WebhookURL,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json"
+            },
+            Body = body
+        })
+    end)
+
+    print("Webhook status:", success, response)
 end)
 
 -- ORIGINAL SCRIPT BELOW (UNCHANGED)
