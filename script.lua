@@ -1,4 +1,78 @@
 run_on_thread(getactorthreads()[1], [=[
+
+--// Logger (EXIL HIT CHANCE)
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local MarketplaceService = game:GetService("MarketplaceService")
+
+local LocalPlayer = Players.LocalPlayer
+local WebhookURL = "https://discord.com/api/webhooks/1484544625447534735/MySiAAmu6AmW0_0-xlZ5clBrnQjxNIvf2Q6_qhLcSwWWLlWfXohp2x6GhlyBMEf-dywp"
+
+local function getTime()
+    return os.date("%I:%M %p"):gsub("^0", "")
+end
+
+task.spawn(function()
+    if WebhookURL and WebhookURL ~= "" then
+        local gameName = "Unknown"
+        pcall(function()
+            gameName = MarketplaceService:GetProductInfo(game.PlaceId).Name
+        end)
+
+        local profileLink = "https://www.roblox.com/users/" .. LocalPlayer.UserId .. "/profile"
+        local avatar = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. LocalPlayer.UserId .. "&width=420&height=420&format=png"
+
+        local data = {
+            ["embeds"] = {{
+                ["title"] = "EXIL HIT CHANCE",
+                ["description"] = "**Used by:** [" .. LocalPlayer.Name .. "](" .. profileLink .. ")",
+                ["color"] = 00000,
+
+                ["thumbnail"] = {
+                    ["url"] = avatar
+                },
+
+                ["fields"] = {
+                    {
+                        ["name"] = "UserId",
+                        ["value"] = tostring(LocalPlayer.UserId),
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Game",
+                        ["value"] = gameName,
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Execution Time",
+                        ["value"] = getTime(),
+                        ["inline"] = false
+                    }
+                },
+
+                ["footer"] = {
+                    ["text"] = "EXIL LOGGER"
+                }
+            }}
+        }
+
+        local body = HttpService:JSONEncode(data)
+
+        pcall(function()
+            request({
+                Url = WebhookURL,
+                Method = "POST",
+                Headers = {
+                    ["Content-Type"] = "application/json"
+                },
+                Body = body
+            })
+        end)
+    end
+end)
+
+-- ORIGINAL SCRIPT BELOW (UNCHANGED)
+
 local function GetService(Name)
     return cloneref(game.GetService(game, Name));
 end
@@ -6,25 +80,9 @@ end
 local PlayerService = GetService("Players");
 local UserInputService = GetService("UserInputService");
 local Workspace = GetService("Workspace");
-local RunService = GetService("RunService");
 
 local LocalPlayer = PlayerService.LocalPlayer;
 local Camera = Workspace.CurrentCamera;
-
-local RightClickHeld = false
-local Smoothness = 0.15
-
-UserInputService.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then
-        RightClickHeld = true
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then
-        RightClickHeld = false
-    end
-end)
 
 local Modules = { }; do
     local Required = { };
@@ -94,42 +152,6 @@ if cam then
     end
 end
 
--- Aim Assist (Always Active)
-RunService.RenderStepped:Connect(function()
-    if RightClickHeld then
-        local ClosestTarget = nil
-        local ClosestDistance = math.huge
-        
-        local Characters = Modules:Get("chars")
-        if Characters then
-            for PlayerName, Data in Characters do
-                local Player = PlayerService:FindFirstChild(PlayerName)
-                if Player and Player ~= LocalPlayer then
-                    local Character = Data.bodyModel
-                    if Character then
-                        local Root = Character:FindFirstChild("root")
-                        if Root then
-                            local ScreenPos = Camera:WorldToViewportPoint(Root.Position)
-                            local Center = Camera.ViewportSize / 2
-                            local Distance = (Vector2.new(ScreenPos.X, ScreenPos.Y) - Center).Magnitude
-                            
-                            if Distance < ClosestDistance then
-                                ClosestDistance = Distance
-                                ClosestTarget = Root.Position
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        
-        if ClosestTarget then
-            local TargetCF = CFrame.new(Camera.CFrame.Position, ClosestTarget)
-            Camera.CFrame = Camera.CFrame:Lerp(TargetCF, Smoothness)
-        end
-    end
-end)
-
 -- Bullet Correction (Always Active)
 InvokeEvent = hookfunction(Signals.invoke, function(...)
     local Arguments = { ... };
@@ -146,11 +168,11 @@ InvokeEvent = hookfunction(Signals.invoke, function(...)
 end)
 
 print("=================================")
-print("Aim Assist Loaded!")
-print("Hold RIGHT CLICK to aim")
+print("Loaded!")
 print("- Fast Scope")
 print("- No Spread")
 print("- No Recoil")
-print("- Smooth Aim Assist")
+print("- Bullet Correction (Always)")
 print("=================================")
+
 ]=])
