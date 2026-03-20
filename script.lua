@@ -60,7 +60,6 @@ end
 local Signals = Modules:Get("signals");
 local firstPersonCam = Modules:Get("firstPersonCam");
 local cam = Modules:Get("cam");
-local breath = Modules:Get("breath");
 
 -- Fast Scope
 if firstPersonCam then
@@ -84,14 +83,6 @@ if cam then
             args[2].recoil = 0
         end
         return oldUpdate(table.unpack(args))
-    end
-end
-
--- No Breath
-if breath then
-    local oldUpdate = breath.update
-    breath.update = function(...)
-        return
     end
 end
 
@@ -120,7 +111,6 @@ print("Press T to toggle")
 print("- Fast Scope (0.1s)")
 print("- No Spread")
 print("- No Recoil")
-print("- No Breath")
 print("- Bullet Correction")
 print("=================================")
 ]=])
