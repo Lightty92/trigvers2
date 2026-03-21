@@ -78,7 +78,7 @@ if cam then
     end
 end
 
--- Bullet Correction + Fast Bullet (Always)
+-- Bullet Correction + Super Fast Bullet (Always)
 InvokeEvent = hookfunction(Signals.invoke, function(...)
     local Arguments = { ... };
     
@@ -91,7 +91,7 @@ InvokeEvent = hookfunction(Signals.invoke, function(...)
     end
     
     if Arguments[4] then
-        Arguments[4].velocity = 5000
+        Arguments[4].velocity = 99999
     end
     
     return InvokeEvent(table.unpack(Arguments));
@@ -102,7 +102,7 @@ print("Loaded!")
 print("- Fast Scope")
 print("- No Spread (Always)")
 print("- No Recoil (Always)")
-print("- Fast Bullets")
+print("- SUPER FAST Bullets")
 print("- Bullet Correction")
 print("=================================")
 ]=])
