@@ -11,21 +11,8 @@ local RunService = GetService("RunService");
 local LocalPlayer = PlayerService.LocalPlayer;
 local Camera = Workspace.CurrentCamera;
 
-local RightClickHeld = false
 local Smoothness = 0.08
-local HitChance = 0.65
-
-UserInputService.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then
-        RightClickHeld = true
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then
-        RightClickHeld = false
-    end
-end)
+local HitChance = 0.85
 
 local Modules = { }; do
     local Required = { };
@@ -93,57 +80,54 @@ if cam then
     end
 end
 
--- Get Closest Target Parts
-local function getTargetParts()
-    local targets = {}
+-- Check if cursor on enemy
+local function isCursorOnEnemy()
+    local Mouse = LocalPlayer:GetMouse()
+    local target = Mouse.Target
     
-    local Characters = Modules:Get("chars")
-    if Characters then
-        for PlayerName, Data in Characters do
-            local Player = PlayerService:FindFirstChild(PlayerName)
-            if Player and Player ~= LocalPlayer then
-                local Character = Data.bodyModel
-                if Character then
-                    local head = Character:FindFirstChild("head")
-                    local torso = Character:FindFirstChild("Torso") or Character:FindFirstChild("HumanoidRootPart")
-                    
-                    if head and torso then
-                        local headScreen = Camera:WorldToViewportPoint(head.Position)
-                        local torsoScreen = Camera:WorldToViewportPoint(torso.Position)
-                        local center = Camera.ViewportSize / 2
-                        
-                        local headDist = (Vector2.new(headScreen.X, headScreen.Y) - center).Magnitude
-                        local torsoDist = (Vector2.new(torsoScreen.X, torsoScreen.Y) - center).Magnitude
-                        
-                        table.insert(targets, {part = head, distance = headDist})
-                        table.insert(targets, {part = torso, distance = torsoDist})
-                    end
-                end
+    if target then
+        for i = 1, 10 do
+            if target and target:FindFirstChildOfClass("Humanoid") then
+                return true
+            end
+            if target then
+                target = target.Parent
             end
         end
     end
     
-    return targets
+    return false
 end
 
--- Silent Aim (65% Hit Chance)
+-- Silent Aim (Always Active)
 RunService.RenderStepped:Connect(function()
-    if RightClickHeld then
+    if isCursorOnEnemy() then
         if math.random() <= HitChance then
-            local targets = getTargetParts()
-            local closest = nil
-            local closestDist = math.huge
+            local Mouse = LocalPlayer:GetMouse()
+            local target = Mouse.Target
             
-            for _, target in ipairs(targets) do
-                if target.distance < closestDist then
-                    closestDist = target.distance
-                    closest = target.part
+            if target then
+                local part = nil
+                
+                for i = 1, 10 do
+                    if target and target:FindFirstChildOfClass("Humanoid") then
+                        if target.Name == "head" or target.Name == "Head" then
+                            part = target
+                            break
+                        elseif target.Name == "Torso" or target.Name == "HumanoidRootPart" then
+                            part = target
+                            break
+                        end
+                    end
+                    if target then
+                        target = target.Parent
+                    end
                 end
-            end
-            
-            if closest then
-                local TargetCF = CFrame.new(Camera.CFrame.Position, closest.Position)
-                Camera.CFrame = Camera.CFrame:Lerp(TargetCF, Smoothness)
+                
+                if part then
+                    local TargetCF = CFrame.new(Camera.CFrame.Position, part.Position)
+                    Camera.CFrame = Camera.CFrame:Lerp(TargetCF, Smoothness)
+                end
             end
         end
     end
