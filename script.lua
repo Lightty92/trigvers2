@@ -53,19 +53,17 @@ local Signals = Modules:Get("signals");
 local firstPersonCam = Modules:Get("firstPersonCam");
 local cam = Modules:Get("cam");
 
--- Fast Scope
 if firstPersonCam then
     local oldSetup = firstPersonCam.setup
     firstPersonCam.setup = function(...)
         local result = oldSetup(...)
-        firstPersonCam.scopeSpeed = 0.001
-        firstPersonCam.zoomSpeed = 0.001
-        firstPersonCam.transitionTime = 0.1
+        firstPersonCam.scopeSpeed = 0
+        firstPersonCam.zoomSpeed = 0
+        firstPersonCam.transitionTime = 0
         return result
     end
 end
 
--- No Spread (Always)
 if cam then
     local oldUpdate = cam.update
     cam.update = function(...)
@@ -78,31 +76,18 @@ if cam then
     end
 end
 
--- Bullet Correction + Super Fast Bullet (Always)
 InvokeEvent = hookfunction(Signals.invoke, function(...)
     local Arguments = { ... };
     
-    local Origin = Arguments[2]
-    local LookVector = Arguments[3]
-    
-    if Origin and LookVector then
-        local Direction = Camera.CFrame.LookVector
-        Arguments[3] = Direction
+    if Arguments[2] and Arguments[3] then
+        Arguments[3] = Camera.CFrame.LookVector
     end
     
     if Arguments[4] then
         Arguments[4].velocity = 99999
+        Arguments[4].cooldown = 0
     end
     
     return InvokeEvent(table.unpack(Arguments));
 end)
-
-print("=================================")
-print("Loaded!")
-print("- Fast Scope")
-print("- No Spread (Always)")
-print("- No Recoil (Always)")
-print("- SUPER FAST Bullets")
-print("- Bullet Correction")
-print("=================================")
 ]=])
